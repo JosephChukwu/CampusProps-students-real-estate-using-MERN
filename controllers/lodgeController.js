@@ -121,11 +121,16 @@ const filteredLodges = asyncHandler(async (req, res) => {
     if (filters.rent) {
         query.where('rent').equals(filters.type)
     }
-  
-    // Execute the query and return the results
-    const filteredLodges = await query.exec().populate('creator', '-password')
+    try {
+        const filteredLodges = await query.populate('creator', '-password').exec()
   
     return res.status(200).json(filteredLodges);
+        
+    } catch (error) {
+        return res.status(500).json(error.message)
+
+    }
+  
   });
   
 
@@ -143,10 +148,8 @@ const createLodge = asyncHandler(async (req, res) => {
             console.log('user campus:', userCampus)
         }
 
-        // Assuming req.body contains the campus information for the lodge
         const lodgeCampus = req.body.campus;
 
-        // Check if the user's campus matches the lodge's campus
         if (userCampus !== lodgeCampus) {
             return res.status(403).json({ message: "Ooops, You can only create a lodge in your campus" });
         }
@@ -191,7 +194,6 @@ const deleteLodge = asyncHandler( async (req, res) => {
             throw new Error("You cannot delete other agents' lodges")
         }else {
             //await lodge.remove()
-            // Use the `deleteOne` method to delete the document
                 await lodge.deleteOne({ _id: req.params.id });
 
         }
