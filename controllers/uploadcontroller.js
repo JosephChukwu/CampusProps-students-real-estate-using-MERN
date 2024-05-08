@@ -25,12 +25,13 @@ const upload = multer({ storage: storage})
 // })
 
 // module.exports = uploadController
-const uploadImage = asyncHandler(async (req, res) => {
+const uploadImage = asyncHandler(async (req, res, next) => {
     try {
         return res.status(200).json('File uploaded successfully')
     } catch (error) {
+        next(error)
         console.error(error);
-        return res.status(500).json('Error uploading files');
+        // return res.status(500).json('Error uploading files');
     }
 })
 

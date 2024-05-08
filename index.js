@@ -5,10 +5,11 @@ const cookieParser = require('cookie-parser')
 const cors = require ('cors')
 //const authController = require('./controllers/userController')
 //const lodgeController = require('./controllers/lodgeController')
-const userRoute = require('./routes/userRoutes.js')
+const authRoute = require('./routes/authRoutes.js')
 const lodgeRoute = require('./routes/lodgeRoutes')
 const verifyToken = require('./middlewares/verifyToken.js')
 const isAgent = require('./middlewares/userRoles.js')
+const userRouter = require('./routes/user.route.js')
 
 
 const app = express()
@@ -26,10 +27,21 @@ mongoose.connect(process.env.MONGO_URL)
     //routes and middleware
     app.use(cors())
     app.use(express.json())
+    app.use(cookieParser())
     app.use(express.urlencoded({extended: true}))
-    app.use('/api/user', userRoute)
+    app.use('/api/auth', authRoute)
+    app.use('/api/user', userRouter)
     // app.use(verifyToken)
     // app.use(isAgent)
+    app.use((err, req, res, next) => {
+        const statusCode = err.statusCode || 500;
+        const message = err.message || 'Internal Server Error';
+        return res.status(statusCode).json({
+            success: false,
+            statusCode,
+            message
+         })
+    })
     app.use('/api/lodge', lodgeRoute)
 
 

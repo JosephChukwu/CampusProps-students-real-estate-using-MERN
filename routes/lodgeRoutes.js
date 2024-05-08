@@ -29,8 +29,8 @@ lodgeRoute.get('/typesCount', typesCount)
 lodgeRoute.get('/singleLodge/:id', singleLodge)
 
 //create a new lodge
-lodgeRoute.post('/createLodge',verifyToken,isAgent, createLodge)
-lodgeRoute.post('/image', upload.array('image', 5), uploadImage)
+lodgeRoute.post('/createLodge/:id',verifyToken,isAgent, createLodge)
+// lodgeRoute.post('/image', upload.array('image', 5), uploadImage)
 
 //update a lodge
 lodgeRoute.patch('/updateLodge/:id',verifyToken,isAgent, updateLodge)
