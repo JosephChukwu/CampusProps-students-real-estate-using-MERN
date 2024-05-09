@@ -1,6 +1,6 @@
 const express = require('express')
 const verifyToken = require('../middlewares/verifyToken')
-const {updateUser, bookLodge, getBookedLodges, addFaves, getFaves} = require('../controllers/userController.js')
+const {updateUser, bookLodge, getBookedLodges, addFaves, getFaves, agentLodges} = require('../controllers/userController.js')
 
 const userRouter = express.Router()
 
@@ -14,5 +14,8 @@ userRouter.get('/bookedLodges/:id',verifyToken, getBookedLodges)
 userRouter.post('/addToFave/:lodgeId', addFaves)
 
 userRouter.get('/allFaves', getFaves)
+
+//get agents lodges
+userRouter.get('/agentLodges/:id', verifyToken, agentLodges)
 
 module.exports = userRouter

@@ -1,3 +1,5 @@
+const Lodge = require("../models/lodge.js");
+
 const AsyncHandler = require("express-async-handler");
 const User = require("../models/user.js");
 const errorHandler = require("../utils/error");
@@ -135,6 +137,22 @@ const getFaves = AsyncHandler(async(req, res) => {
     console.log(error.message)
     res.status(404).json({message: error})
   }
+})
+
+//to get the lodegs an agent posted
+export const agentLodges = AsyncHandler(async(req, res, next) => {
+  if (req.user.id === req.params.id) {
+    try {
+      const lodges = await Lodge.find({ userRef: req.params.id });
+      res.status(200).json(lodges);
+    
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    return next(errorHandler(401, "you can only view your own lodges!"))
+  }
+  
 })
 
 
