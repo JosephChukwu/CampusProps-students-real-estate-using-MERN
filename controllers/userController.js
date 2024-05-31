@@ -81,41 +81,40 @@ const getBookedLodges = AsyncHandler(async (req, res) => {
 });
 
 //controller to add to faves
-const addFaves = AsyncHandler(async (req, res) => {
-  const lodgeId = req.params.lodgeId
-  const email = req.body.email
+const addFaves = AsyncHandler(async (req, res, next) => {
+  const lodgeId = req.params.lodgeId;
+  const email = req.body.email;
   try {
-    const user = await User.findOne({email: email});
-    
+    console.log(`Received request to toggle favorite for lodgeId: ${lodgeId} by user: ${email}`);
+
+    const user = await User.findOne({ email: email });
 
     if (!user) {
-      return res.status(404).json({ message: "user not found" });
+      return res.status(401).json({ error: "User not found!" });
     }
-    // const favoritesAsString = user.favorites.map((favorite) => favorite.toString());
 
-    let updatedUser
-if (user.favorites.toString().includes(lodgeId)){   
+    let updatedUser;
+    if (user.favorites.includes(lodgeId)) {
       updatedUser = await User.findOneAndUpdate(
-        {email:  email }, 
-        {
-          $pull: { favorites: lodgeId }, // Remove lodgeId from favorites
-        },
+        { email: email },
+        { $pull: { favorites: lodgeId } }, // Remove lodgeId from favorites
         { new: true } // To return the updated user
       );
-          return res.status(200).json({ message: 'Removed lodge from favorites', updatedUser });
+      console.log(`Removed lodgeId: ${lodgeId} from favorites for user: ${email}`);
+      return res.status(200).json({ message: "Removed lodge from favorites", updatedUser });
     }
 
-    //if user favorites doesn't include lodgeId
-    user.favorites.push(lodgeId)
-    console.log(`User favorites: ${user.favorites}`);
-      console.log(`Removing lodgeId: ${lodgeId}`);
-     updatedUser = await user.save()
-    return res.status(200).json({message: "Added lodge to favorites", updatedUser})
+    user.favorites.push(lodgeId);
+    updatedUser = await user.save();
+    console.log(`Added lodgeId: ${lodgeId} to favorites for user: ${email}`);
+    return res.status(200).json({ message: "Added lodge to favorites", updatedUser });
+
   } catch (error) {
-    console.log(error.message);
-    res.status(500).json(error.message);
+    console.error(`Error toggling favorite: ${error.message}`);
+    next(error);
   }
-});
+}
+);
 
 
 
@@ -139,11 +138,13 @@ const getFaves = AsyncHandler(async(req, res) => {
   }
 })
 
+
+
 //to get the lodegs an agent posted
-export const agentLodges = AsyncHandler(async(req, res, next) => {
+const agentLodges = AsyncHandler(async(req, res, next) => {
   if (req.user.id === req.params.id) {
     try {
-      const lodges = await Lodge.find({ userRef: req.params.id });
+      const lodges = await Lodge.find({ creator: req.params.id });
       res.status(200).json(lodges);
     
     } catch (error) {
@@ -159,4 +160,4 @@ export const agentLodges = AsyncHandler(async(req, res, next) => {
 
 
 
-module.exports = { updateUser, bookLodge, getBookedLodges, addFaves, getFaves };
+module.exports = { updateUser, bookLodge, getBookedLodges, addFaves, getFaves, agentLodges };

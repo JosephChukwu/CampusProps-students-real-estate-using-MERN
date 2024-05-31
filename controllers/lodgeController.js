@@ -7,16 +7,16 @@ const errorHandler = require("../utils/error.js");
 //const asyncHandler = require(express-async-handler)
 
 //get all lodges
-const getAll = asyncHandler(async (req, res) => {
+const getAll = asyncHandler(async (req, res, next) => {
   try {
-    const lodges = await Lodge.find({
-      orderBy: {
-        createdAt: "desc",
-      },
-    }).populate("creator", "-password");
-    return res.status(200).json(lodges);
+    const lodges = await Lodge.find({})
+      .sort({ createdAt: -1 })
+      .populate("creator", "-password");
+    return res.status(200).json({ success: true, lodges });
   } catch (error) {
-    return res.status(500).json(error.message);
+    next(error);
+
+    // return res.status(500).json(error.message);
   }
 });
 
@@ -87,19 +87,19 @@ const typesCount = asyncHandler(async (req, res) => {
 });
 
 //get individual lodge
-const singleLodge = asyncHandler(async (req, res) => {
+const singleLodge = asyncHandler(async (req, res, next) => {
   try {
     const lodge = await Lodge.findById(req.params.id).populate(
       "creator",
       "-password"
     );
     if (!lodge) {
-      throw new Error("No lodge with this ID");
+      return next(errorHandler(401, "Lodge Id doesn't exist!"));
     } else {
       return res.status(200).json(lodge);
     }
   } catch (error) {
-    return res.status(500).json(error.message);
+    next(error);
   }
 });
 
@@ -134,11 +134,10 @@ const filteredLodges = asyncHandler(async (req, res) => {
 });
 
 //create a lodge
-const createLodge = asyncHandler(async (req, res) => {
+const createLodge = asyncHandler(async (req, res, next) => {
   try {
-
     const { campus } = req.body;
-        const userId = req.params.id;
+    const userId = req.params.id;
 
     // console.log(req.user);
     // const userCampus = req.user.campus;
@@ -147,7 +146,7 @@ const createLodge = asyncHandler(async (req, res) => {
     // if (!userCampus) {
     //   return res.status(400).json({ message: "User has no campus specified." });
     // }
-     // else {
+    // else {
     //   console.log("user campus:", userCampus);
     // }
     // console.log(req.body);
@@ -160,20 +159,22 @@ const createLodge = asyncHandler(async (req, res) => {
     //     .json({ message: "Ooops, You can only create a lodge in your campus" });
     // }
 
-     // Check if the user is an agent
-     if (!req.user || !req.user.role || req.user.role !== "Agent") {
-            return res.status(403).json('Access denied; limited to only agents');
-        }
-    
-         // Check if the campus matches the user's campus
-         if (campus !== req.user.campus) {
-            return res.status(403).json('Access denied; you can only create a lodge in your campus');
-        }
-   
+    // Check if the user is an agent
+    if (!req.user || !req.user.role || req.user.role !== "Agent") {
+      return res.status(403).json("Access denied; limited to only agents");
+    }
+
+    // Check if the campus matches the user's campus
+    if (campus !== req.user.campus) {
+      return res
+        .status(403)
+        .json("Access denied; you can only create a lodge in your campus");
+    }
 
     const newLodge = await Lodge.create({ ...req.body, creator: req.user.id });
     return res.status(201).json(newLodge);
   } catch (error) {
+    next(error);
     console.error(error); // Log the error for debugging purposes
     return res.status(500).json(error.message);
   }

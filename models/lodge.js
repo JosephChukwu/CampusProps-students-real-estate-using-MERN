@@ -56,6 +56,11 @@ const LodgeSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+
+    // isFave: {
+    //     type: Boolean,
+    //     default: false
+    // },
     // creatorPhone: {
     //     type: mongoose.Schema.Types.ObjectId,
     //     ref: "User.phone",

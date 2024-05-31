@@ -33,7 +33,7 @@ const createUser = asyncHandler(async (req, res, next) => {
     const token = jwt.sign(
       { id: newUser._id, role: newUser.role, campus: newUser.campus },
       process.env.JWT_SECRET,
-      { expiresIn: "4h" }
+      { expiresIn: "168h" }
     );
     return res
       .status(201)
@@ -64,7 +64,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
     const token = jwt.sign(
       { id: user._id, role: user.role, campus: user.campus },
       process.env.JWT_SECRET,
-      { expiresIn: "4h" }
+      { expiresIn: "168h" }
     );
     const { password, ...others } = user._doc;
     res
@@ -88,7 +88,7 @@ const google = asyncHandler(async (req, res, next) => {
       const token = jwt.sign(
         { id: user._id, role: user.role, campus: user.campus },
         process.env.JWT_SECRET,
-        { expiresIn: "4h" }
+        { expiresIn: "168h" }
       );
       const { password, ...others } = user._doc;
       res
