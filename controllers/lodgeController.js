@@ -104,10 +104,13 @@ const singleLodge = asyncHandler(async (req, res, next) => {
 });
 
 //filter button
-const filteredLodges = asyncHandler(async (req, res) => {
-  console.log("req.user", req.user);
-  const userCampus = req.user.campus;
+const filteredLodges = asyncHandler(async (req, res,next) => {
+  console.log("recieved req for fiter kodges")
+  // console.log("req.user", req.user);
   const filters = req.query; // Query parameters containing filter criteria
+  console.log(filters)
+  const userCampus = req.query.campus;
+
 
   // Construct the base query
   const query = Lodge.find({ campus: userCampus }); // Filter by the user's campus
@@ -121,17 +124,23 @@ const filteredLodges = asyncHandler(async (req, res) => {
     query.where("type").equals(filters.type);
   }
 
-  if (filters.rent) {
-    query.where("rent").equals(filters.rent);
+  if (filters.vacancy) {
+    query.where("vacancy").equals(filters.vacancy);
   }
   try {
     const filteredLodges = await query.populate("creator", "-password").exec();
 
     return res.status(200).json(filteredLodges);
+    console.log(filteredLodges)
   } catch (error) {
-    return res.status(500).json(error.message);
+    next(error)
+    // return res.status(500).json(error.message);
   }
 });
+
+
+
+
 
 //create a lodge
 const createLodge = asyncHandler(async (req, res, next) => {

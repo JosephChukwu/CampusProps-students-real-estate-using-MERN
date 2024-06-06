@@ -14,7 +14,7 @@ lodgeRoute.get('/allLodges', getAll )
 lodgeRoute.get('/campusLodges',verifyToken, getAlll)
 
 //get lodges by filter
-lodgeRoute.get('/filter',verifyToken, filteredLodges)
+lodgeRoute.get('/filter', filteredLodges)
 
 //get feeatured lodges
 lodgeRoute.get('/featured', getFeatured)

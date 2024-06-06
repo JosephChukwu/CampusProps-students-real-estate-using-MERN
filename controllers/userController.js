@@ -90,7 +90,7 @@ const addFaves = AsyncHandler(async (req, res, next) => {
     const user = await User.findOne({ email: email });
 
     if (!user) {
-      return res.status(401).json({ error: "User not found!" });
+      return next(errorHandler(401, "error: User not found!"));
     }
 
     let updatedUser;
@@ -119,24 +119,34 @@ const addFaves = AsyncHandler(async (req, res, next) => {
 
 
 //to get all favorites of a user
-const getFaves = AsyncHandler(async(req, res) => {
-  const email = req.body.email
-  try {
-    const user = await User.findOne({email: email})
-    if (!user){
-      return res.status(400).json({message: "User not found!"})
-    }
-    const allFaves = await User.findOne(
-      {email: email},
-      {favorites: true}
-    )
-    res.status(200).json({message: 'Here are you favorite lodges', allFaves})
+const getFaves = AsyncHandler(async (req, res, next) => {
+  const email = req.query.email;
+  // console.log("Received request for /allFaves with query:", req.query);
 
+  // console.log("Fetching favorites for email:", email);
+  
+  try {
+    const user = await User.findOne({email: email});
+    if (!user) {
+      console.log("User not found");
+      return next(errorHandler(401, "User not found"));
+    }
+
+    const allFavesIds = user.favorites; // Assuming this is an array of lodge IDs
+    const lodgesPromises = allFavesIds.map(id => 
+      Lodge.findById(id).populate("creator", "-password").exec()
+    );
+    const lodges = await Promise.all(lodgesPromises);
+    
+    console.log("Favorites fetched:", lodges);
+    res.status(200).json({ message: 'Here are your favorite lodges', lodges });
   } catch (error) {
-    console.log(error.message)
-    res.status(404).json({message: error})
+    console.error("Error fetching favorites:", error);
+    next(error);
   }
-})
+});
+
+
 
 
 
